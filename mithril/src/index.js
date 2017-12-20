@@ -1,5 +1,5 @@
-var m = require("mithril")
-var root = document.getElementById('app')
+let m = require("mithril")
+let root = document.getElementById('app')
 
 const Data = {
   stocks: {},
