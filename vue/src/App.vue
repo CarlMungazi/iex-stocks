@@ -1,21 +1,14 @@
 <template>
   <div id="app">
-    <LineChart/>
+    <router-view></router-view>
   </div>
 </template>
 
 <script>
-import LineChart from './components/LineChart'
+
 
 export default {
   name: 'app',
-  components: {
-    LineChart
-  },
-  mounted () {
-    this.$appState.getChartData()
-    this.$appState.getChartData('googl')
-  }
 }
 </script>
 
