@@ -32,6 +32,10 @@
         <div class="Chart__content">
           <bar-chart v-if="loaded" :chart-data="barData"></bar-chart>
         </div>
+        <div class="Chart__content">
+          Peers Latest Volume
+          <doughnut-chart v-if="loaded" :chart-data="doughtnutData"></doughnut-chart>
+        </div>
       </div>
     </div>
   </div>
@@ -41,12 +45,14 @@
 import axios from 'axios'
 import LineChart from '@/components/LineChart'
 import BarChart from '@/components/BarChart'
+import DoughnutChart from '@/components/DoughnutChart'
 
 export default {
   name: 'StockView',
   components: {
     LineChart,
-    BarChart
+    BarChart,
+    DoughnutChart
   },
   props: {},
   data () {
@@ -56,6 +62,7 @@ export default {
       volumeByVenue: [],
       lineData: null,
       barData: null,
+      doughtnutData: null,
       companyName: '',
       quoteData: [],
       loaded: false,
@@ -104,7 +111,6 @@ export default {
     requestData () {
       // TO DO: cache responses to prevent unnecessary requests
       // TO DO: fallback for empty data, like year-to-date
-      // TO DO: make sure promise chain error handling is correct
       // TO DO: add spinner to signal loading data http://tobiasahlin.com/spinkit/
       if (this.stock == null || this.stock === '' || this.stock === 'undefined') {
         this.showError = true
@@ -143,6 +149,29 @@ export default {
         this.quoteData = res.data.quote
         this.stockPeers = res.data.peers
         this.volumeByVenue = res.data["volume-by-venue"]
+        
+        return axios.get(`https://api.iextrading.com/1.0/stock/market/batch?symbols=${this.stockPeers}&types=quote`)
+      })
+      .then(res => {
+        let arr = []
+        Object.keys(res.data).forEach(el => {
+          arr.push(res.data[el].quote)
+        })
+
+        this.doughtnutData = {
+          labels: arr.map(stock => stock.symbol),
+          datasets: [
+            {
+              backgroundColor: [
+                '#41B883',
+                '#E46651',
+                '#00D8FF',
+                '#DD1B16'
+              ],
+              data: arr.map(stock => stock.marketCap)
+            }
+          ]
+        }
         this.loaded = true
       })
       .catch(err => {
