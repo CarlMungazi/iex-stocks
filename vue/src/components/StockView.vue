@@ -56,11 +56,9 @@ export default {
       volumeByVenue: [],
       lineData: null,
       barData: null,
-      // chartData: [],
       companyName: '',
       quoteData: [],
       loaded: false,
-      // labels: [],
       showError: false,
       errorMessage: 'Please enter a stock symbol'
     }
@@ -104,9 +102,7 @@ export default {
         })
     },
     requestData () {
-      // TO DO: cache responses to prevent unnecessary requests 
-      // TO DO: change chained requests to batch request
-      // TO DO: create a nested promise which also gets quote data https://api.iextrading.com/1.0/stock/${sym}/quote
+      // TO DO: cache responses to prevent unnecessary requests
       // TO DO: fallback for empty data, like year-to-date
       // TO DO: make sure promise chain error handling is correct
       // TO DO: add spinner to signal loading data http://tobiasahlin.com/spinkit/
@@ -115,17 +111,12 @@ export default {
         return 
       }
       this.resetState()
-      axios.all([
-        axios.get(`https://api.iextrading.com/1.0/stock/${this.stock}/chart/1m`),
-        axios.get(`https://api.iextrading.com/1.0/stock/${this.stock}/quote`),
-        axios.get(`https://api.iextrading.com/1.0/stock/${this.stock}/peers`),
-        axios.get(`https://api.iextrading.com/1.0/stock/${this.stock}/volume-by-venue`)
-      ])
-      .then(axios.spread((chartRes, quoteRes, peerRes, volumeByVenueRes) => {
+      axios.get(`https://api.iextrading.com/1.0/stock/${this.stock}/batch?types=quote,peers,volume-by-venue,chart&range=1m&last=10`)
+      .then(res => {
         //...remember: these callbacks will be executed only when both requests are complete.
-        console.log(quoteRes.data)
+        console.log(res.data)
         this.lineData = {
-          labels: chartRes.data.map(stock => stock.label),
+          labels: res.data.chart.map(stock => stock.label),
           datasets: [{
             label: 'Close',
             borderColor: '#249EBF',
@@ -133,27 +124,27 @@ export default {
             borderWidth: 1,
             pointBorderColor: '#249EBF',
             backgroundColor: 'transparent',
-            data: chartRes.data.map(stock => stock.close)
+            data: res.data.chart.map(stock => stock.close)
           }]
         }
         this.barData = {
-          labels: volumeByVenueRes.data.map(stock => stock.venueName),
+          labels: res.data["volume-by-venue"].map(stock => stock.venueName),
           datasets: [{
-            label: quoteRes.data.symbol,
+            label: res.data.quote.symbol,
             borderColor: '#249EBF',
             pointBackgroundColor: 'white',
             borderWidth: 1,
             pointBorderColor: '#249EBF',
             backgroundColor: 'transparent',
-            data: volumeByVenueRes.data.map(stock => stock.volume)
+            data: res.data["volume-by-venue"].map(stock => stock.volume)
           }]
         }
 
-        this.quoteData = quoteRes.data
-        this.stockPeers = peerRes.data
-        this.volumeByVenue = volumeByVenueRes.data
+        this.quoteData = res.data.quote
+        this.stockPeers = res.data.peers
+        this.volumeByVenue = res.data["volume-by-venue"]
         this.loaded = true
-      }))
+      })
       .catch(err => {
         this.errorMessage = err.response.data.error
         this.showError = true
