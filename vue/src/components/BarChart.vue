@@ -5,26 +5,16 @@ export default {
   name: 'BarChart',
   extends: Bar,
   mixins: [mixins.reactiveProp],
-  // props: {
-  //   chartData: {
-  //     type: Array,
-  //     required: false
-  //   },
-  //   chartLabels: {
-  //     type: Array,
-  //     required: true
-  //   }
-  // },
   data () {
     return {
       options: {
         scales: {
           yAxes: [{
             ticks: {
-              beginAtZero: true
+              beginAtZero: false
             },
             gridLines: {
-              display: true
+              display: false
             }
           }],
           xAxes: [ {
@@ -36,7 +26,7 @@ export default {
         legend: {
           display: false,
         },
-        responsive: true,
+        responsive: false,
         maintainAspectRatio: false
       }
     }
