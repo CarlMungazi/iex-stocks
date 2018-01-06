@@ -143,9 +143,6 @@ export default {
         })
     },
     requestData () {
-      // TO DO: cache responses to prevent unnecessary requests
-      // TO DO: fallback for empty data, like year-to-date
-      // TO DO: add spinner to signal loading data http://tobiasahlin.com/spinkit/
       if (this.stock == null || this.stock === '' || this.stock === 'undefined') {
         this.showError = true
         return 

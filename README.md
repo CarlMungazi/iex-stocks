@@ -1,6 +1,18 @@
 # iex-stocks
+Stock market search engine built using data from the IEX stock exchange.
 
-> A Vue.js project
+### Stack
+- JS: Vue
+- CSS: Bootstrap
+- Build: Webpack
+- Visualization: Chart.js
+
+### TO DO
+1. UI: Add spinner to signal loading data http://tobiasahlin.com/spinkit/
+2. UI: Add styles to error message 
+3. Routing: Fix routing
+4. Refactor: Review mark-up, CSS classes and component structure
+5. TDD: Add unit tests
 
 ## Build Setup
 
