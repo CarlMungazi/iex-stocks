@@ -1,20 +1,45 @@
 <template>
   <div class="container-fluid">
+    <div class="alert alert-danger" v-if="showError" role="alert">
+            {{ errorMessage }}
+    </div>
     <div class="row" style="margin-bottom: 10px">
       <div class="col-sm-12 search-container">
         <h1> IEX Search Engine </h1>
         <p>Search through more than 8,000 company stock profiles</p>
-          <input
-            class="search-input"
-            @keyup.enter="requestData"
-            placeholder="Please enter a stock symbol"
-            type="search" name="search"
-            v-model="stock"
-          >
-          <button class="search__button" @click="requestData">Find</button>
+          <div class="search-input input-group mb-3">
+            <input 
+              class="form-control"
+              @keyup.enter="requestData"
+              type="search"
+              name="search"
+              placeholder="Enter a stock symbol"
+              v-model="stock" 
+              aria-label="Stock symbol">
+            <div class="input-group-append">
+              <button class="btn btn-outline-secondary" type="button" @click="requestData">Find</button>
+            </div>
+          </div>
+        <hr style="border-color: #000">
       </div>
-      <div class="error-message" v-if="showError">
-        {{ errorMessage }}
+      <div class="col-sm-12 search-container">
+        <div v-if="loading" class="loading">
+          <p>Loading Data...</p>
+          <div class="sk-fading-circle">
+            <div class="sk-circle1 sk-circle"></div>
+            <div class="sk-circle2 sk-circle"></div>
+            <div class="sk-circle3 sk-circle"></div>
+            <div class="sk-circle4 sk-circle"></div>
+            <div class="sk-circle5 sk-circle"></div>
+            <div class="sk-circle6 sk-circle"></div>
+            <div class="sk-circle7 sk-circle"></div>
+            <div class="sk-circle8 sk-circle"></div>
+            <div class="sk-circle9 sk-circle"></div>
+            <div class="sk-circle10 sk-circle"></div>
+            <div class="sk-circle11 sk-circle"></div>
+            <div class="sk-circle12 sk-circle"></div>
+          </div>
+        </div>
       </div>
     </div>
     <div v-if="loaded" class="row" style="margin-bottom: 10px">
@@ -100,8 +125,9 @@ export default {
       companyNews: null,
       quoteData: null,
       loaded: false,
+      loading: false,
       showError: false,
-      errorMessage: 'Please enter a stock symbol'
+      errorMessage: ''
     }
   },
   mounted () {
@@ -120,6 +146,7 @@ export default {
       this.requestData()
     },
     changeRange (evt) {
+      this.loading = true
       axios.get(`https://api.iextrading.com/1.0/stock/${this.stock}/chart/${evt.target.value}`)
         .then(res => {
           console.log(res.data)
@@ -136,10 +163,10 @@ export default {
             }]
           }
           this.loaded = true
+          this.loading = false
         })
         .catch(err => {
-          this.errorMessage = err.response.data.error
-          this.showError = true
+          console.log(err)
         })
     },
     requestData () {
@@ -148,6 +175,8 @@ export default {
         return 
       }
       this.resetState()
+      this.loading = true
+
       axios.get(`https://api.iextrading.com/1.0/stock/${this.stock}/batch?types=quote,peers,volume-by-venue,company
 ,news,chart&range=1m&last=10`)
       .then(res => {
@@ -213,9 +242,15 @@ export default {
           ]
         }
         this.loaded = true
+        this.loading = false
       })
       .catch(err => {
-        this.errorMessage = err.response.data.error
+        if (err.response.data == 'Unknown symbol') {
+          this.errorMessage = "The stock symbol you entered does not exist."
+        } else {
+          this.errorMessage = err.response.data
+        } 
+        
         this.showError = true
       })
     },
@@ -230,13 +265,152 @@ export default {
 
 <style>
 .search-input {
-  padding: 1.25rem;
-  background-color: #fff;
-  border: 1px solid #e8e9ed;
-  font-size: 1rem;
-  -webkit-box-flex: 1;
-  -ms-flex: 1;
-  flex: 1;
+  display: inline-flex;
+}
+
+.loading {
+  text-align: center;
+  color: black;
+}
+
+.loading p {
+  font-size: 1.5rem;
+}
+
+.sk-fading-circle {
+  margin: 100px auto;
+  width: 40px;
+  height: 40px;
+  position: relative;
+}
+
+.sk-fading-circle .sk-circle {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.sk-fading-circle .sk-circle:before {
+  content: '';
+  display: block;
+  margin: 0 auto;
+  width: 15%;
+  height: 15%;
+  background-color: #333;
+  border-radius: 100%;
+  -webkit-animation: sk-circleFadeDelay 1.2s infinite ease-in-out both;
+          animation: sk-circleFadeDelay 1.2s infinite ease-in-out both;
+}
+.sk-fading-circle .sk-circle2 {
+  -webkit-transform: rotate(30deg);
+    -ms-transform: rotate(30deg);
+        transform: rotate(30deg);
+}
+.sk-fading-circle .sk-circle3 {
+  -webkit-transform: rotate(60deg);
+      -ms-transform: rotate(60deg);
+          transform: rotate(60deg);
+}
+.sk-fading-circle .sk-circle4 {
+  -webkit-transform: rotate(90deg);
+      -ms-transform: rotate(90deg);
+          transform: rotate(90deg);
+}
+.sk-fading-circle .sk-circle5 {
+  -webkit-transform: rotate(120deg);
+      -ms-transform: rotate(120deg);
+          transform: rotate(120deg);
+}
+.sk-fading-circle .sk-circle6 {
+  -webkit-transform: rotate(150deg);
+      -ms-transform: rotate(150deg);
+          transform: rotate(150deg);
+}
+.sk-fading-circle .sk-circle7 {
+  -webkit-transform: rotate(180deg);
+      -ms-transform: rotate(180deg);
+          transform: rotate(180deg);
+}
+.sk-fading-circle .sk-circle8 {
+  -webkit-transform: rotate(210deg);
+      -ms-transform: rotate(210deg);
+          transform: rotate(210deg);
+}
+.sk-fading-circle .sk-circle9 {
+  -webkit-transform: rotate(240deg);
+      -ms-transform: rotate(240deg);
+          transform: rotate(240deg);
+}
+.sk-fading-circle .sk-circle10 {
+  -webkit-transform: rotate(270deg);
+      -ms-transform: rotate(270deg);
+          transform: rotate(270deg);
+}
+.sk-fading-circle .sk-circle11 {
+  -webkit-transform: rotate(300deg);
+      -ms-transform: rotate(300deg);
+          transform: rotate(300deg); 
+}
+.sk-fading-circle .sk-circle12 {
+  -webkit-transform: rotate(330deg);
+      -ms-transform: rotate(330deg);
+          transform: rotate(330deg); 
+}
+.sk-fading-circle .sk-circle2:before {
+  -webkit-animation-delay: -1.1s;
+          animation-delay: -1.1s; 
+}
+.sk-fading-circle .sk-circle3:before {
+  -webkit-animation-delay: -1s;
+          animation-delay: -1s; 
+}
+.sk-fading-circle .sk-circle4:before {
+  -webkit-animation-delay: -0.9s;
+          animation-delay: -0.9s; 
+}
+.sk-fading-circle .sk-circle5:before {
+  -webkit-animation-delay: -0.8s;
+          animation-delay: -0.8s; 
+}
+.sk-fading-circle .sk-circle6:before {
+  -webkit-animation-delay: -0.7s;
+          animation-delay: -0.7s; 
+}
+.sk-fading-circle .sk-circle7:before {
+  -webkit-animation-delay: -0.6s;
+          animation-delay: -0.6s; 
+}
+.sk-fading-circle .sk-circle8:before {
+  -webkit-animation-delay: -0.5s;
+          animation-delay: -0.5s; 
+}
+.sk-fading-circle .sk-circle9:before {
+  -webkit-animation-delay: -0.4s;
+          animation-delay: -0.4s;
+}
+.sk-fading-circle .sk-circle10:before {
+  -webkit-animation-delay: -0.3s;
+          animation-delay: -0.3s;
+}
+.sk-fading-circle .sk-circle11:before {
+  -webkit-animation-delay: -0.2s;
+          animation-delay: -0.2s;
+}
+.sk-fading-circle .sk-circle12:before {
+  -webkit-animation-delay: -0.1s;
+          animation-delay: -0.1s;
+}
+
+@-webkit-keyframes sk-circleFadeDelay {
+  0%, 39%, 100% { opacity: 0; }
+  40% { opacity: 1; }
+}
+
+@keyframes sk-circleFadeDelay {
+  0%, 39%, 100% { opacity: 0; }
+  40% { opacity: 1; } 
 }
 .stock-summary {
   padding: 10px;
