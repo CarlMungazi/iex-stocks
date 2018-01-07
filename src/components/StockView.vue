@@ -5,7 +5,9 @@
     </div>
     <div class="row" style="margin-bottom: 10px">
       <div class="col-sm-12 search-container">
-        <h1> IEX Search Engine </h1>
+        <router-link to="/">
+          <h1> IEX Search Engine </h1>
+        </router-link>
         <p>Search through more than 8,000 company stock profiles</p>
           <div class="search-input input-group mb-3">
             <input 
@@ -149,7 +151,6 @@ export default {
       this.loading = true
       axios.get(`https://api.iextrading.com/1.0/stock/${this.stock}/chart/${evt.target.value}`)
         .then(res => {
-          console.log(res.data)
           this.lineData = {
             labels: res.data.map(stock => stock.label),
             datasets: [{
@@ -162,6 +163,7 @@ export default {
               data: res.data.map(stock => stock.close)
             }]
           }
+          this.setURL()
           this.loaded = true
           this.loading = false
         })
@@ -177,11 +179,9 @@ export default {
       this.resetState()
       this.loading = true
 
-      axios.get(`https://api.iextrading.com/1.0/stock/${this.stock}/batch?types=quote,peers,volume-by-venue,company
-,news,chart&range=1m&last=10`)
+      axios.get(`https://api.iextrading.com/1.0/stock/${this.stock}/batch?types=quote,peers,volume-by-venue,company,news,chart&range=1m&last=10`)
       .then(res => {
         //...remember: these callbacks will be executed only when both requests are complete.
-        console.log(res.data)
         res.data.news.length = 3 // we only want the first three news stories
         this.lineData = {
           labels: res.data.chart.map(stock => stock.label),
@@ -241,6 +241,7 @@ export default {
             }
           ]
         }
+        this.setURL()
         this.loaded = true
         this.loading = false
       })
@@ -264,6 +265,9 @@ export default {
 </script>
 
 <style>
+.search-container a {
+  text-decoration: none;
+}
 .search-input {
   display: inline-flex;
 }
