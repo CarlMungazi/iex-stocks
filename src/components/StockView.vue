@@ -1,102 +1,105 @@
 <template>
   <div class="container-fluid">
     <div class="alert alert-danger" v-if="showError" role="alert">
-            {{ errorMessage }}
+      {{ errorMessage }}
     </div>
-    <div class="row" style="margin-bottom: 10px">
+    <section class="search-area row" style="margin-bottom: 10px">
       <div class="col-sm-12 search-container">
         <router-link to="/">
           <h1> IEX Search Engine </h1>
         </router-link>
         <p>Search through more than 8,000 company stock profiles</p>
-          <div class="search-input input-group mb-3">
-            <input 
-              class="form-control"
-              @keyup.enter="requestData"
-              type="search"
-              name="search"
-              placeholder="Enter a stock symbol"
-              v-model="stock" 
-              aria-label="Stock symbol">
-            <div class="input-group-append">
-              <button class="btn btn-outline-secondary" type="button" @click="requestData">Find</button>
+        <div class="search-input input-group mb-3">
+          <input 
+            class="form-control"
+            @keyup.enter="requestData"
+            type="search"
+            name="search"
+            placeholder="Enter a stock symbol"
+            v-model="stock" 
+            aria-label="Stock symbol">
+          <div class="input-group-append">
+            <button class="btn btn-outline-secondary" type="button" @click="requestData">Find</button>
+          </div>
+        </div>
+      </div>
+    </section>
+    <div class="col-sm-12 search-container">
+      <div v-if="loading" class="loading">
+        <p>Loading Data...</p>
+        <div class="sk-fading-circle">
+          <div class="sk-circle1 sk-circle"></div>
+          <div class="sk-circle2 sk-circle"></div>
+          <div class="sk-circle3 sk-circle"></div>
+          <div class="sk-circle4 sk-circle"></div>
+          <div class="sk-circle5 sk-circle"></div>
+          <div class="sk-circle6 sk-circle"></div>
+          <div class="sk-circle7 sk-circle"></div>
+          <div class="sk-circle8 sk-circle"></div>
+          <div class="sk-circle9 sk-circle"></div>
+          <div class="sk-circle10 sk-circle"></div>
+          <div class="sk-circle11 sk-circle"></div>
+          <div class="sk-circle12 sk-circle"></div>
+        </div>
+      </div>
+    </div>
+    <section v-if="loaded" class="stock-data">
+      <div class="row" style="margin-bottom: 10px">
+        <div class="col-sm-4">
+          <div class="stock-summary">
+            <p class="title"> {{ quoteData.companyName }} <span>{{ `(${quoteData.symbol})` }}</span></p>
+            <p>Stock Exchange: <span>{{ companyStats.exchange }} </span></p>
+            <p>Website: <a :href="companyStats.website" target="blank">{{ companyStats.website }} </a></p>
+            <p class="stock-close">Latest market price: ${{ quoteData.latestPrice }}</p>
+            <p class="stock-close">Market Capitalization: ${{ quoteData.marketCap }}</p>
+            <div> Peer stocks: <span class="stock-peers" v-for="stock in stockPeers" @click="changeStock">{{ stock }} </span> </div>
+            <div class="stock-news">
+            <hr>
+              <h5 style="color: #FF9905"> Latest News </h5>
+              <div v-for="news in companyNews">
+                <span> {{ news.datetime }} || </span><span> {{ news.source }} </span>
+                <a :href="news.url" target="blank"><p>{{ news.headline }} </p></a>
+              </div>
             </div>
           </div>
-        <hr style="border-color: #000">
-      </div>
-      <div class="col-sm-12 search-container">
-        <div v-if="loading" class="loading">
-          <p>Loading Data...</p>
-          <div class="sk-fading-circle">
-            <div class="sk-circle1 sk-circle"></div>
-            <div class="sk-circle2 sk-circle"></div>
-            <div class="sk-circle3 sk-circle"></div>
-            <div class="sk-circle4 sk-circle"></div>
-            <div class="sk-circle5 sk-circle"></div>
-            <div class="sk-circle6 sk-circle"></div>
-            <div class="sk-circle7 sk-circle"></div>
-            <div class="sk-circle8 sk-circle"></div>
-            <div class="sk-circle9 sk-circle"></div>
-            <div class="sk-circle10 sk-circle"></div>
-            <div class="sk-circle11 sk-circle"></div>
-            <div class="sk-circle12 sk-circle"></div>
-          </div>
         </div>
-      </div>
-    </div>
-    <div v-if="loaded" class="row" style="margin-bottom: 10px">
-      <div class="col-sm-4">
-        <div class="stock-summary">
-          <p class="title"> {{ quoteData.companyName }} <span>{{ `(${quoteData.symbol})` }}</span></p>
-          <p>Stock Exchange: {{ companyStats.exchange }} </p>
-          <p>Website: <a :href="companyStats.website" target="blank">{{ companyStats.website }} </a></p>
-          <p class="stock__close">Latest market price: ${{ quoteData.latestPrice }}</p>
-          <div> Peer stocks: <span v-for="stock in stockPeers" @click="changeStock">{{ stock }} </span> </div>
-          <div class="stock-news">
-            <h5> Latest News </h5>
-            <div v-for="news in companyNews">
-              <span> {{ news.datetime }} || </span><span> {{ news.source }} </span>
-              <a :href="news.url" target="blank"><p>{{ news.headline }} </p></a>
+        <div class="col-sm-8">
+          <div class="chart chart-line">
+            <div class="chart-title">
+              Historically adjusted market-wide data
+            </div>
+            <div class="chart-line__ranges">
+              <button class="chart-line-btn" value ='1m' @click="changeRange">1 month (default)</button><button class="chart-line-btn" value ='3m' @click="changeRange">3 months</button><button class="chart-line-btn" value ='6m' @click="changeRange">6 months</button><button class="chart-line-btn" value ='ytd' @click="changeRange">Year-to-date</button><button class="chart-line-btn" value ='1y' @click="changeRange">1 Year</button><button class="chart-line-btn" value ='2y' @click="changeRange">2 Years</button><button class="chart-line-btn" value ='5y' @click="changeRange">5 Years</button>
+            </div>
+            <div class="chart-area">
+              <line-chart :chart-data="lineData" :height="250"></line-chart>
             </div>
           </div>
         </div>
       </div>
-      <div class="col-sm-8">
-        <div class="chart chart-line">
-          <div class="chart-title">
-            Historically adjusted market-wide data
+      <div class="row">
+        <div class="col-sm-6">
+          <div class="chart chart-bar">
+            <div class="chart-title">
+              Volume by Market
+            </div>
+            <div class="chart-area">
+              <bar-chart :chart-data="barData" :height="400"></bar-chart>
+            </div>
           </div>
-          <div class="chart-line__ranges">
-            <button value ='1m' @click="changeRange">1 month (default)</button><button value ='3m' @click="changeRange">3 months</button><button value ='6m' @click="changeRange">6 months</button><button value ='ytd' @click="changeRange">Year-to-date</button><button value ='1y' @click="changeRange">1 Year</button><button value ='2y' @click="changeRange">2 Years</button><button value ='5y' @click="changeRange">5 Years</button>
-          </div>
-          <div class="chart-area">
-            <line-chart :chart-data="lineData" :height="250"></line-chart>
+        </div>
+        <div class="col-sm-6">
+          <div class="chart chart-doughnut">
+            <div class="chart-title">
+              Peer Stocks Market Capitalization
+            </div>
+            <div class="chart-area">
+              <doughnut-chart :chart-data="doughtnutData" :height="400"></doughnut-chart>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    <div v-if="loaded" class="row">
-      <div class="col-sm-6">
-        <div class="chart chart-bar">
-          <div class="chart-title">
-            Volume by Market
-          </div>
-          <div class="chart-area">
-            <bar-chart :chart-data="barData" :height="400"></bar-chart>
-          </div>
-        </div>
-      </div>
-      <div class="col-sm-6">
-        <div class="chart chart-doughnut">
-          <div class="chart-title">
-            Peer Stocks Market Capitalization
-          </div>
-          <div class="chart-area">
-            <doughnut-chart :chart-data="doughtnutData" :height="400"></doughnut-chart>
-          </div>
-        </div>
-      </div>
-    </div>
+    </section>
   </div>
 </template>
 
@@ -204,7 +207,7 @@ export default {
             borderWidth: 1,
             pointBorderColor: '#249EBF',
             backgroundColor: 'transparent',
-            data: res.data["volume-by-venue"].map(stock => stock.volume)
+            data: res.data["volume-by-venue"].map(stock => stock.avgMarketPercent)
           }]
         }
 
@@ -251,25 +254,45 @@ export default {
         } else {
           this.errorMessage = err.response.data
         } 
-        
         this.showError = true
       })
     },
     setURL () {
-      history.pushState({ 
-        info: `iex-stock ${this.stock}` }, 
-        this.stock, `/#/${this.stock}` )
+      history.pushState(
+        { info: `iex-stock ${this.stock}` }, 
+        this.stock, 
+        `/#/${this.stock}` 
+      )
     }
   }
 }
 </script>
 
 <style>
+.search-area {
+  margin-bottom: 20px;
+  border-bottom: 5px solid #337ab7
+}
+
+.search-container {
+  padding: 15px
+}
+
 .search-container a {
   text-decoration: none;
 }
+
 .search-input {
   display: inline-flex;
+}
+
+.stock-peers {
+  cursor: pointer;
+  margin: 0 .25em;
+}
+
+.stock-peers:hover {
+  color: #1266AB;
 }
 
 .loading {
@@ -416,6 +439,7 @@ export default {
   0%, 39%, 100% { opacity: 0; }
   40% { opacity: 1; } 
 }
+
 .stock-summary {
   padding: 10px;
 }
@@ -425,8 +449,15 @@ export default {
   border-radius: 2px;
   box-sizing: border-box;
 }
+
+.chart-line-btn {
+  margin: 0 .5em;
+  background-color: #337ab7;
+  color: #fff;
+}
+
 .chart-title {
-  color: #4D4D4D;
+  color: #FF9905;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 14px;
   font-weight: 200;
